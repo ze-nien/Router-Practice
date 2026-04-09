@@ -2,37 +2,38 @@ import { LEVELS } from "../constants/gameConfig";
 import { shuffle } from "../../../utils/shuffle";
 
 //生成數獨
-export const generateBoard = () => {
-  const board = Array.from({ length: 81 }, (_, i) => ({
-    id: i,
-    row: Math.floor(i / 9),
-    col: i % 9,
-    num: 0,
-    isFixed: true,
-  }));
-  fillBoard(board);
-  return board;
-};
+// const generateBoard = () => {
+//   const board = Array.from({ length: 81 }, (_, i) => ({
+//     id: i,
+//     row: Math.floor(i / 9),
+//     col: i % 9,
+//     num: 0,
+//     isFixed: true,
+//   }));
+//   fillBoard(board);
+//   return board;
+// };
 //回溯法
-const fillBoard = (board, index = 0) => {
-  if (index === 81) return true;
+// const fillBoard = (board, index = 0) => {
+//   if (index === 81) return true;
 
-  const nums = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+//   const nums = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
-  for (let num of nums) {
-    if (isValid(board, index, num)) {
-      board[index].num = num;
-      //遞迴進下一格 路徑通回傳true
-      if (fillBoard(board, index + 1)) return true;
-      //不通則歸零
-      board[index].num = 0;
-    }
-  }
+//   for (let num of nums) {
+//     if (isValid(board, index, num)) {
+//       board[index].num = num;
+//       //遞迴進下一格 路徑通回傳true
+//       if (fillBoard(board, index + 1)) return true;
+//       //不通則歸零
+//       board[index].num = 0;
+//     }
+//   }
 
-  //所有數字都試過不成功回傳false
-  return false;
-};
-//數字放置驗證
+//   //所有數字都試過不成功回傳false
+//   return false;
+// };
+
+//數字驗證
 const isValid = (board, index, num) => {
   const row = Math.floor(index / 9);
   const col = index % 9;
@@ -79,25 +80,6 @@ export class Sudoku {
     return this.solutionCount;
   }
 
-  //數字驗證
-  _isValid(board, index, num) {
-    const row = Math.floor(index / 9);
-    const col = index % 9;
-    for (let i = 0; i < 9; i++) {
-      //行row列col檢查與num是否相同
-      if (row * 9 + i !== index && board[row * 9 + i].num === num) return false;
-      if (i * 9 + col !== index && board[i * 9 + col].num === num) return false;
-
-      //九宮格
-      const startRow = Math.floor(row / 3) * 3;
-      const startCol = Math.floor(col / 3) * 3;
-      const boxId = (startRow + Math.floor(i / 3)) * 9 + (startCol + (i % 3));
-      if (boxId !== index && board[boxId].num === num) return false;
-    }
-
-    return true;
-  }
-
   //回溯法
   _backtrack(board, isRandom) {
     if (this.solutionCount >= 2) return;
@@ -111,7 +93,7 @@ export class Sudoku {
     if (isRandom) nums = shuffle(nums);
 
     for (let n of nums) {
-      if (this._isValid(board, index, n)) {
+      if (isValid(board, index, n)) {
         board[index].num = n;
         this._backtrack(board, isRandom);
 
@@ -172,17 +154,27 @@ export class Sudoku {
     return puzzle;
   }
 
+  //驗證填入數字是否有衝突
   checkConflict(board, targetIdx, num) {
+    //空格略過
     if (num === 0) return false;
+
+    //找出目標格子的小區塊位置
     const { row: targetRow, col: targetCol } = board[targetIdx];
     const targetBox = Math.floor(targetRow / 3) * 3 + Math.floor(targetCol / 3);
+
     return board.some((cell, idx) => {
+      //略過自身與不同數字的格子
       if (idx === targetIdx) return false;
       if (cell.num !== num) return false;
+
+      //判斷 與目標格子數字相同 的行、列、小區塊 是否相同
       const isSameRow = cell.row === targetRow;
       const isSameCol = cell.col === targetCol;
       const isSameBox =
         Math.floor(cell.row / 3) * 3 + Math.floor(cell.col / 3) === targetBox;
+
+      //回傳任一相同情況
       return isSameRow || isSameCol || isSameBox;
     });
   }
@@ -195,7 +187,7 @@ export class Sudoku {
     if (index === -1) return true;
 
     for (let n = 1; n <= 9; n++) {
-      if (this._isValid(board, index, n)) {
+      if (isValid(board, index, n)) {
         // 1. 填入數字
         board[index].num = n;
 

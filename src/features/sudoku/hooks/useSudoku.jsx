@@ -46,16 +46,19 @@ export const useSudoku = (level) => {
   //更新棋盤 index選擇的位置 num填入之數字
   const fillNumber = useCallback(
     (index, num) => {
-      //保留字return
+      //保留字 數字沒變 略過
       if (board[index].isFixed) return;
-      //數字沒變
       if (board[index].num === num) return;
 
+      //填錯數字
       const isWrong = num !== 0 && sudoku.checkConflict(board, index, num);
       if (isWrong) setMistakes((p) => p + 1);
 
+      //更新棋盤
       setBoard((prev) => {
+        //更新填入數字
         const newBoard = prev.map((c, i) => (i === index ? { ...c, num } : c));
+        //isError更新回傳
         return newBoard.map((c, i) => ({
           ...c,
           isError: c.num !== 0 && sudoku.checkConflict(newBoard, i, c.num),

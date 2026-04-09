@@ -1,7 +1,7 @@
 import React from "react";
 import clsx from "clsx";
 
-const Cell = ({ cellData, selectedCell, setSelectedCell }) => {
+const Cell = ({ cellData, selectedCell, setSelectedCell, isSameNum }) => {
   const { row, col, num, isFixed, isError } = cellData;
   const isSelected = selectedCell?.row === row && selectedCell?.col === col;
   const isHighLight = selectedCell?.row === row || selectedCell?.col === col;
@@ -18,12 +18,13 @@ const Cell = ({ cellData, selectedCell, setSelectedCell }) => {
 
     //優先權邏輯
     {
-      "bg-slate-600 text-white": isSelected, // 選中時
-      "bg-slate-200": isHighLight && !isSelected, // 高亮且未選中
-      "bg-white": !isSelected && !isHighLight, // 平時
+      "bg-slate-700 text-white": isSelected, // 選中時
+      "bg-slate-500 text-white": isSameNum && !isSelected,
+      "bg-slate-200": isHighLight && !isSelected && !isSameNum, // 高亮且未選中
+      "bg-white": !isSelected && !isHighLight && !isSameNum, // 平時
       "font-bold": isFixed, // 題目固定數字加粗
       "text-blue-600": !isFixed && num !== 0, // 玩家填寫顏色
-      "text-red-600": isError,
+      "text-red-600": isError, //填錯
     },
   );
 
