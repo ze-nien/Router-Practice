@@ -1,4 +1,4 @@
-const Cell = ({ cell, onCellClick, onToggleFlag }) => {
+const Cell = ({ cell, handleCellClick, handleToggleFlag }) => {
   const { isRevealed, isMine, isFlagged, neighborCount } = cell;
   const renderContent = () => {
     if (!isRevealed) return isFlagged ? "🚩" : "";
@@ -29,8 +29,8 @@ const Cell = ({ cell, onCellClick, onToggleFlag }) => {
         ${isRevealed && !isMine && neighborCount > 0 ? getCountColor(neighborCount) : ""}
         ${isRevealed && isMine ? "bg-red-500" : ""}
       `}
-      onClick={onCellClick}
-      onContextMenu={onToggleFlag}
+      onClick={handleCellClick}
+      onContextMenu={handleToggleFlag}
     >
       {renderContent()}
     </div>

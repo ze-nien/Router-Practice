@@ -21,30 +21,60 @@ export const useMinesweeper = (level) => {
   };
 
   //格子點擊事件
+  // const handleCellClick = (id, row, col) => {
+  //   //實際遊戲狀態不是初始(idle)或遊戲中(playing)則return不處裡
+  //   if (currentStatus !== "idle" && currentStatus !== "playing") return;
+  //   //當前點擊位置
+  //   const targetCell = board.find((c) => c.id === id);
+  //   //點擊位置是走過的或是放置旗幟則return不處裡
+  //   if (targetCell.isRevealed || targetCell.isFlagged) return;
+
+  //   //第一次點擊生成地雷
+  //   if (gameStatus === "idle") {
+  //     const initialBoard = plantMines(board, level, id, row, col);
+  //     setBoard(initialBoard);
+  //     setGameStatus("playing");
+  //     return;
+  //   }
+  //   //點到地雷=>地雷全公開遊戲結束
+  //   if (targetCell.isMine) {
+  //     const lostBoard = revealAllMines(board);
+  //     setBoard(lostBoard);
+  //     return;
+  //   }
+  //   //紀錄走訪
+  //   setBoard((prev) =>
+  //     prev.map((cell) =>
+  //       cell.id === id ? { ...cell, isRevealed: true } : cell,
+  //     ),
+  //   );
+  // };
   const handleCellClick = (id, row, col) => {
-    //實際遊戲狀態不是初始(idle)或遊戲中(playing)則return不處裡
     if (currentStatus !== "idle" && currentStatus !== "playing") return;
-    //當前點擊位置
-    const targetCell = board.find((c) => c.id === id);
-    //點擊位置是走過的或是放置旗幟則return不處裡
+
+    // 為了保險，先拿到最新狀態的 Cell
+    let currentBoard = board;
+    let targetCell = board.find((c) => c.id === id);
+
     if (targetCell.isRevealed || targetCell.isFlagged) return;
 
-    //第一次點擊生成地雷
+    // 1. 處理第一次點擊：種雷
     if (gameStatus === "idle") {
-      const initialBoard = plantMines(board, level, id, row, col);
-      setBoard(initialBoard);
+      currentBoard = plantMines(board, level, id, row, col);
       setGameStatus("playing");
-      return;
+      // 種完雷後，重新抓取該格子的狀態（因為 board 變了）
+      targetCell = currentBoard.find((c) => c.id === id);
     }
-    //點到地雷=>地雷全公開遊戲結束
+
+    // 2. 判斷是否踩雷
     if (targetCell.isMine) {
-      const lostBoard = revealAllMines(board);
-      setBoard(lostBoard);
+      setBoard(revealAllMines(currentBoard));
       return;
     }
-    //紀錄走訪
-    setBoard((prev) =>
-      prev.map((cell) =>
+
+    // 3. 翻開格子（包含第一次點擊的那一格）
+    setBoard(
+      currentBoard.map((cell) =>
         cell.id === id ? { ...cell, isRevealed: true } : cell,
       ),
     );

@@ -89,36 +89,37 @@ export const plantMines = (board, level, startId, row, col) => {
 
 //reveal閉包使用currentBoard 不影響finalBoard
 //擴散BFS
-const runFloodFillBFS = (finalBoard, startId, level) => {
-  const currentBoard = [...finalBoard];
-  const queue = [startId];
-  const visited = new Set();
+// const runFloodFillBFS = (finalBoard, startId, level) => {
+//   const currentBoard = [...finalBoard];
+//   const queue = [startId];
+//   const visited = new Set();
 
-  while (queue.length > 0) {
-    const id = queue.shift();
-    if (visited.has(id)) continue;
-    visited.add(id);
-    if (
-      currentBoard[id].isRevealed ||
-      currentBoard[id].isFlagged ||
-      currentBoard[id].isMine
-    )
-      continue;
-    currentBoard[id] = { ...currentBoard[id], isRevealed: true };
+//   while (queue.length > 0) {
+//     const id = queue.shift();
+//     if (visited.has(id)) continue;
+//     visited.add(id);
+//     if (
+//       currentBoard[id].isRevealed ||
+//       currentBoard[id].isFlagged ||
+//       currentBoard[id].isMine
+//     )
+//       continue;
+//     currentBoard[id] = { ...currentBoard[id], isRevealed: true };
 
-    if (currentBoard[id].neighborCount === 0) {
-      const currentNeighbors = getNeighbors(
-        currentBoard[id].row,
-        currentBoard[id].col,
-        level,
-      );
-      currentNeighbors.forEach((neighbor) => {
-        if (!currentBoard[neighbor.id].isRevealed) queue.push(neighbor.id);
-      });
-    }
-  }
-  return currentBoard;
-};
+//     if (currentBoard[id].neighborCount === 0) {
+//       const currentNeighbors = getNeighbors(
+//         currentBoard[id].row,
+//         currentBoard[id].col,
+//         level,
+//       );
+//       currentNeighbors.forEach((neighbor) => {
+//         if (!currentBoard[neighbor.id].isRevealed) queue.push(neighbor.id);
+//       });
+//     }
+//   }
+//   return currentBoard;
+// };
+
 //擴散DFS
 const runFloodFillDFS = (finalBoard, startId, level) => {
   const currentBoard = [...finalBoard];
