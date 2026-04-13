@@ -1,7 +1,9 @@
 import clsx from "clsx";
 import { LEVELS } from "../constants/gameConfig";
+import { useSudokuContext } from "../hooks/useSudokuContext";
 
-const LevelBtns = ({ currentLevel, isGenerating, handleLevelChange }) => {
+const LevelBtns = () => {
+  const { currentLevel, isGenerating, handleLevelChange } = useSudokuContext();
   const levelkeys = Object.keys(LEVELS);
 
   return (

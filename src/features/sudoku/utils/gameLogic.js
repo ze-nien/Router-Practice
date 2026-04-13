@@ -1,37 +1,4 @@
-import { LEVELS } from "../constants/gameConfig";
 import { shuffle } from "../../../utils/shuffle";
-
-//生成數獨
-// const generateBoard = () => {
-//   const board = Array.from({ length: 81 }, (_, i) => ({
-//     id: i,
-//     row: Math.floor(i / 9),
-//     col: i % 9,
-//     num: 0,
-//     isFixed: true,
-//   }));
-//   fillBoard(board);
-//   return board;
-// };
-//回溯法
-// const fillBoard = (board, index = 0) => {
-//   if (index === 81) return true;
-
-//   const nums = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-
-//   for (let num of nums) {
-//     if (isValid(board, index, num)) {
-//       board[index].num = num;
-//       //遞迴進下一格 路徑通回傳true
-//       if (fillBoard(board, index + 1)) return true;
-//       //不通則歸零
-//       board[index].num = 0;
-//     }
-//   }
-
-//   //所有數字都試過不成功回傳false
-//   return false;
-// };
 
 //數字驗證
 const isValid = (board, index, num) => {
@@ -55,18 +22,27 @@ const isValid = (board, index, num) => {
 export class Sudoku {
   constructor() {
     this.solutionCount = 0;
+    this.shuffledPool = Array.from({ length: 9 }, () =>
+      shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]),
+    );
   }
 
   //生成
   generate() {
-    const board = Array.from({ length: 81 }, (_, i) => ({
-      id: i,
-      row: Math.floor(i / 9),
-      col: i % 9,
-      num: 0,
-      isFixed: true,
-      isError: false,
-    }));
+    const board = Array.from({ length: 81 }, (_, i) => {
+      const row = Math.floor(i / 9);
+      const col = i % 9;
+      const box = Math.floor(row / 3) * 3 + Math.floor(col / 3);
+      return {
+        id: i,
+        row: row,
+        col: col,
+        num: 0,
+        box: box,
+        isFixed: true,
+        isError: false,
+      };
+    });
     this.solutionCount = 0;
     this._backtrack(board, true);
     return board;
@@ -81,16 +57,21 @@ export class Sudoku {
   }
 
   //回溯法
-  _backtrack(board, isRandom) {
+  _backtrack(board, isRandom, counter = { calls: 0 }) {
     if (this.solutionCount >= 2) return;
+
+    counter.calls++;
+    if (counter.calls > 10000) return;
+
     const index = board.findIndex((cell) => cell.num === 0);
     if (index === -1) {
       this.solutionCount++;
       return;
     }
 
-    let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    if (isRandom) nums = shuffle(nums);
+    let nums = isRandom
+      ? this.shuffledPool[index % 9]
+      : [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     for (let n of nums) {
       if (isValid(board, index, n)) {
@@ -111,6 +92,22 @@ export class Sudoku {
     indices = shuffle(indices);
     let removedCount = 0; //成功挖洞次數
     let failedCount = 0; //挖洞失敗次數
+
+    // --- 新增：輔助函式 ---
+    // 計算某個 index 屬於哪個九宮格 (0-8)
+    const getBoxIdx = (idx) => {
+      const r = Math.floor(idx / 9);
+      const c = idx % 9;
+      return Math.floor(r / 3) * 3 + Math.floor(c / 3);
+    };
+    // 檢查該九宮格目前的數字數量
+    const getBoxCount = (board, boxIdx) => {
+      return board.filter(
+        (cell, i) => getBoxIdx(i) === boxIdx && cell.num !== 0,
+      ).length;
+    };
+    // -----------------------
+
     for (let idx of indices) {
       //終止條件
       if (removedCount >= config.targetHoles) break; //挖洞數達到目標數
@@ -122,6 +119,28 @@ export class Sudoku {
 
       //設置對稱點
       const symIdx = 80 - idx;
+
+      // --- 新增：區域保底檢查 ---
+      const boxIdx = getBoxIdx(idx);
+      const symBoxIdx = getBoxIdx(symIdx);
+      // 取得這兩個對稱點所屬九宮格目前的數字量
+      const currentBoxCount = getBoxCount(puzzle, boxIdx);
+      const currentSymBoxCount = getBoxCount(puzzle, symBoxIdx);
+      // 如果挖掉後會低於保底數，就跳過此點
+      // 注意：如果是同一個九宮格（中心區），挖掉後會一次減2（或中心點減1）
+      const decreaseCount = idx === symIdx ? 1 : 2;
+      if (boxIdx === symBoxIdx) {
+        if (currentBoxCount - decreaseCount < config.minPerBox) continue;
+      } else {
+        // 不同九宮格，分別檢查
+        if (
+          currentBoxCount - 1 < config.minPerBox ||
+          currentSymBoxCount - 1 < config.minPerBox
+        )
+          continue;
+      }
+      // -----------------------
+
       const backupIdx = puzzle[idx].num;
       const backupSym = puzzle[symIdx].num;
 
@@ -152,31 +171,6 @@ export class Sudoku {
       }
     }
     return puzzle;
-  }
-
-  //驗證填入數字是否有衝突
-  checkConflict(board, targetIdx, num) {
-    //空格略過
-    if (num === 0) return false;
-
-    //找出目標格子的小區塊位置
-    const { row: targetRow, col: targetCol } = board[targetIdx];
-    const targetBox = Math.floor(targetRow / 3) * 3 + Math.floor(targetCol / 3);
-
-    return board.some((cell, idx) => {
-      //略過自身與不同數字的格子
-      if (idx === targetIdx) return false;
-      if (cell.num !== num) return false;
-
-      //判斷 與目標格子數字相同 的行、列、小區塊 是否相同
-      const isSameRow = cell.row === targetRow;
-      const isSameCol = cell.col === targetCol;
-      const isSameBox =
-        Math.floor(cell.row / 3) * 3 + Math.floor(cell.col / 3) === targetBox;
-
-      //回傳任一相同情況
-      return isSameRow || isSameCol || isSameBox;
-    });
   }
 
   async visualizeSolve(board, setBoard) {

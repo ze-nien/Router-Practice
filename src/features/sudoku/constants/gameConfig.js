@@ -8,17 +8,20 @@ export const LEVELS = {
     targetHoles: 40,
     attempts: 30,
     minClues: 38,
+    minPerBox: 4,
   },
   NORMAL: {
     name: "NORMAL",
     targetHoles: 50,
     attempts: 80,
     minClues: 28,
+    minPerBox: 2,
   },
   HARD: {
     name: "HARD",
     targetHoles: 56,
     attempts: 150,
     minClues: 22,
+    minPerBox: 0,
   },
 };
