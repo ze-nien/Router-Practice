@@ -10,6 +10,8 @@ const Layout = () => {
     { to: "/about", label: "About" },
     { to: "/minesweeper", label: "Minesweeper" },
     { to: "/sudoku", label: "Sudoku" },
+
+    { to: "/vinylCollection", label: "VinylCollection" },
   ];
 
   return (

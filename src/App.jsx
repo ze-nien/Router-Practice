@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router";
 import Layout from "./Layout";
 import Home from "./pages/Home";
 import About from "./pages/About";
-import Sudoku from "./pages/Sudoku";
+import VinylCollection from "./pages/VinylCollection";
 
 const router = createBrowserRouter([
   {
@@ -14,12 +14,17 @@ const router = createBrowserRouter([
       { path: "About", element: <About /> },
       {
         path: "Minesweeper",
-        lazy: async () => {
-          let Minesweeper = await import("./pages/Minesweeper");
-          return { Component: Minesweeper.default };
-        },
+        lazy: async () => ({
+          Component: (await import("./pages/Minesweeper")).default,
+        }),
       },
-      { path: "Sudoku", element: <Sudoku /> },
+      {
+        path: "Sudoku",
+        lazy: async () => ({
+          Component: (await import("./pages/Sudoku")).default,
+        }),
+      },
+      { path: "VinylCollection", element: <VinylCollection /> },
     ],
   },
 ]);

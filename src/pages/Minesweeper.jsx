@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Board from "../features/minesweeper/components/Board";
 import { LEVELS } from "../features/minesweeper/constants/gameConfig";
 
